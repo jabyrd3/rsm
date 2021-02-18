@@ -138,7 +138,7 @@ _start() {
     printf '  || RSM will be listening on port %-6s        ||\n' $port'.'
     echo   '   =============================================== ' 
     echo
-    ncat -v -m $max_connections -k -l $port -c '
+    ncat --ssl-key test.key --ssl-cert test.crt -v -m $max_connections -k -l $port -c '
         IP=\$NCAT_REMOTE_ADDR
         PORT=\$NCAT_REMOTE_PORT
         src=\$IP:\$PORT
@@ -147,8 +147,9 @@ _start() {
         tmux -S $rsm_tmux_sock new-window -t $session -n \$src \"
             echo \$(date), connection from: \$src
             echo ________________________________________________________________
+	          stty raw -echo
             until [[ -S $dir/\$name ]]; do sleep 0.1; done
-            ncat -U $dir/\$name | $cat
+            ncat -U $dir/\$name
         \"
         ncat -lU $dir/\$name
         rm -f $dir/\$name
